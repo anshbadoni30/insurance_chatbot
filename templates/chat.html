@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insurance Chatbot</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <h2>💬 AI Insurance Assistant</h2>
+        <div class="chat-box" id="chat-box"></div>
+        <form id="chat-form" autocomplete="off">
+            <input type="text" id="user-input" placeholder="Ask your insurance question..." required>
+            <button type="submit">Send</button>
+            <img src="/static/mic.png" id="mic-icon" alt="🎤" title="Click to speak">
+        </form>
+        <button id="toggle-dark">🌙 Toggle Dark Mode</button>
+    </div>
+
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const chatBox = document.getElementById('chat-box');
+        const micIcon = document.getElementById('mic-icon');
+        const userInput = document.getElementById('user-input');
+        const toggleDark = document.getElementById('toggle-dark');
+
+        toggleDark.onclick = () => {
+            document.body.classList.toggle('dark');
+        };
+
+        chatForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const userText = userInput.value.trim();
+            if (!userText) return;
+
+            chatBox.innerHTML += `
+                <div class="chat-bubble user-msg">
+                    <img class="avatar" src="/static/user.png" alt="User">
+                    <div><strong>You:</strong> ${userText}</div>
+                </div>
+            `;
+            userInput.value = '';
+
+            const loadingMsg = document.createElement("div");
+            loadingMsg.classList.add("bot-msg", "typing");
+            loadingMsg.innerHTML = `
+                <img class="avatar" src="/static/bot.png" alt="Bot">
+                <div class="dots"><span>.</span><span>.</span><span>.</span></div>
+            `;
+            chatBox.appendChild(loadingMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const res = await fetch('/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'user_input=' + encodeURIComponent(userText)
+            });
+            const data = await res.json();
+
+            chatBox.removeChild(loadingMsg);
+
+            const botDiv = document.createElement("div");
+            botDiv.classList.add("chat-bubble", "bot-msg");
+            botDiv.innerHTML = `
+                <img class="avatar" src="/static/bot.png" alt="Bot">
+                <div><strong>Bot:</strong><br>${data.response}</div>
+            `;
+            chatBox.appendChild(botDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        };
+
+        micIcon.onclick = () => {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.start();
+            recognition.onresult = (event) => {
+                userInput.value = event.results[0][0].transcript;
+            };
+        };
+    </script>
+</body>
+</html>
