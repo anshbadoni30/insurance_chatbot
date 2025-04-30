@@ -20,7 +20,7 @@ vectorstore = FAISS.load_local("faiss_index", embeddings=embedding, allow_danger
 DEFAULT_PROMPT = """
 You are an intelligent insurance assistant. 
 Answer the user's query clearly and concisely using bullet points, numbered steps, or sections when appropriate.
-
+Only give answers related  to insurance
 ALWAYS use Markdown-style formatting like:
 - Bullet points
 - Headings
@@ -67,8 +67,9 @@ def handle_response(user_query):
     }
 
     model = genai.GenerativeModel(
-    model_name="gemini-1.5-pro-002",
-    generation_config=generation_config,)
+    model_name="gemini-2.0-flash",
+    #generation_config=generation_config,
+    )
     response = model.generate_content(prompt)
     reply = response.text.strip()
 
