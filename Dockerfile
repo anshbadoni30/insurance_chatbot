@@ -3,6 +3,7 @@ FROM python:3.10-slim
 
 RUN apt update -y
 RUN apt-get update
+RUN apt-get install -y build-essential libportaudio2 portaudio19-dev
 
 # Set the working directory in the container
 WORKDIR /app
